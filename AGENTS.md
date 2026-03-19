@@ -68,9 +68,9 @@ Run from repo root.
 
 - Focused Unix smoke checks without `act`:
   - Pass path:
-    - `PANACHE_INSTALL_DIR="$(mktemp -d)" bash scripts/install-panache.sh && "$PANACHE_INSTALL_DIR/panache" format --check fixtures/ok.md && "$PANACHE_INSTALL_DIR/panache" lint --check fixtures/ok.md`
+    - `tmpdir="$(mktemp -d)" && PANACHE_INSTALL_DIR="$tmpdir" bash scripts/install-panache.sh && "$tmpdir/panache" format --check fixtures/ok.md && "$tmpdir/panache" lint --check fixtures/ok.md`
   - Expected fail path:
-    - `PANACHE_INSTALL_DIR="$(mktemp -d)" bash scripts/install-panache.sh && "$PANACHE_INSTALL_DIR/panache" format --check fixtures/bad.md`
+    - `tmpdir="$(mktemp -d)" && PANACHE_INSTALL_DIR="$tmpdir" bash scripts/install-panache.sh && "$tmpdir/panache" format --check fixtures/bad.md`
     - Expect non-zero exit code.
 
 ### Release Dry Run
