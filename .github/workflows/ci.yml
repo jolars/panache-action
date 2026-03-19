@@ -77,7 +77,7 @@ jobs:
 
   release:
     name: Release
-    needs: test
+    needs: all-tests-passed
     runs-on: ubuntu-latest
     permissions:
       contents: write
