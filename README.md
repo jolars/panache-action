@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/jolars/panache-action/actions/workflows/ci.yml/badge.svg)](https://github.com/jolars/panache-action/actions/workflows/ci.yml)
 
-A GitHub Action that installs [panache](https://github.com/jolars/panache) and
+A GitHub Action that installs [Panache](https://github.com/jolars/panache) and
 runs formatting and lint checks in CI.
 
 The action installs prebuilt release artifacts and supports GitHub-hosted
