@@ -52,6 +52,14 @@ jobs:
     format: "false"
 ```
 
+### Run only on specific path
+
+```yaml
+- uses: jolars/panache-action@v1
+  with:
+   path: docs/
+```
+
 ### Use custom config
 
 ```yaml
