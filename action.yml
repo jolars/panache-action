@@ -6,7 +6,7 @@ inputs:
     description: "File or directory to check"
     required: false
     default: "."
-  panache-version:
+  version:
     description: "Panache version to install (latest or vX.Y.Z)"
     required: false
     default: "latest"
@@ -23,9 +23,9 @@ inputs:
     required: false
     default: ""
 outputs:
-  panache-version:
+  version:
     description: "The installed panache version"
-    value: ${{ steps.panache-version-unix.outputs.panache-version || steps.panache-version-windows.outputs.panache-version }}
+    value: ${{ steps.version-unix.outputs.version || steps.version-windows.outputs.version }}
 runs:
   using: "composite"
   steps:
@@ -35,7 +35,7 @@ runs:
       run: bash "${{ github.action_path }}/scripts/install-panache.sh"
       env:
         PANACHE_REPO: jolars/panache
-        PANACHE_VERSION: ${{ inputs.panache-version }}
+        PANACHE_VERSION: ${{ inputs.version }}
         PANACHE_INSTALL_DIR: ${{ runner.temp }}/panache-bin
 
     - name: Install panache (Windows)
@@ -44,7 +44,7 @@ runs:
       run: . "${{ github.action_path }}/scripts/install-panache.ps1"
       env:
         PANACHE_REPO: jolars/panache
-        PANACHE_VERSION: ${{ inputs.panache-version }}
+        PANACHE_VERSION: ${{ inputs.version }}
         PANACHE_INSTALL_DIR: ${{ runner.temp }}\panache-bin
 
     - name: Add panache to PATH (Unix)
@@ -59,20 +59,20 @@ runs:
 
     - name: Capture panache version (Unix)
       if: runner.os != 'Windows'
-      id: panache-version-unix
+      id: version-unix
       shell: bash
       run: |
         VERSION="$(panache --version | awk '{print $2}')"
-        echo "panache-version=${VERSION}" >> "$GITHUB_OUTPUT"
+        echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
     - name: Capture panache version (Windows)
       if: runner.os == 'Windows'
-      id: panache-version-windows
+      id: version-windows
       shell: pwsh
       run: |
         $versionLine = panache --version
         $version = ($versionLine -split ' ')[1]
-        "panache-version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
     - name: Run format check (Unix)
       if: runner.os != 'Windows' && inputs.format == 'true'

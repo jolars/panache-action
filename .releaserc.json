@@ -23,11 +23,27 @@
       }
     ],
     [
+      "semantic-release-replace-plugin",
+      {
+        "replacements": [
+          {
+            "files": [
+              "README.md"
+            ],
+            "from": "jolars/panache-action@v[0-9]+",
+            "to": "jolars/panache-action@v${nextRelease.version.split('.')[0]}",
+            "countMatches": true
+          }
+        ]
+      }
+    ],
+    [
       "@semantic-release/git",
       {
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
         "assets": [
-          "CHANGELOG.md"
+          "CHANGELOG.md",
+          "README.md"
         ]
       }
     ],

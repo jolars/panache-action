@@ -31,7 +31,7 @@ jobs:
 ```yaml
 - uses: jolars/panache-action@v1
   with:
-    panache-version: v2.23.0
+    version: v2.23.0
 ```
 
 ### Format only
@@ -60,19 +60,19 @@ jobs:
 
 ## Inputs
 
-| Input             | Description                                     | Default  |
-| ----------------- | ----------------------------------------------- | -------- |
-| `path`            | File or directory to check                      | `.`      |
-| `panache-version` | Panache version to install (`latest` or `vX.Y.Z`) | `latest` |
-| `format`          | Run `panache format --check`                    | `true`   |
-| `lint`            | Run `panache lint --check`                      | `true`   |
-| `config`          | Optional path to panache config file            | `""`     |
+| Input     | Description                                       | Default  |
+| --------- | ------------------------------------------------- | -------- |
+| `path`    | File or directory to check                        | `.`      |
+| `version` | Panache version to install (`latest` or `vX.Y.Z`) | `latest` |
+| `format`  | Run `panache format --check`                      | `true`   |
+| `lint`    | Run `panache lint --check`                        | `true`   |
+| `config`  | Optional path to panache config file              | `""`     |
 
 ## Outputs
 
-| Output            | Description                   |
-| ----------------- | ----------------------------- |
-| `panache-version` | Installed panache CLI version |
+| Output    | Description                   |
+| --------- | ----------------------------- |
+| `version` | Installed panache CLI version |
 
 ## Versioning
 

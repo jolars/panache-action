@@ -91,7 +91,7 @@ Follow existing patterns and keep diffs focused.
 ### YAML (`action.yml`, workflows)
 
 - Use 2-space indentation.
-- Keep input names kebab-case (`panache-version`).
+- Keep input names kebab-case (`version`).
 - Keep action input booleans as strings (`"true"`, `"false"`).
 - Keep OS conditionals explicit.
 - Use clear step names, including platform qualifiers when helpful.
