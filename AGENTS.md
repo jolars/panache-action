@@ -75,7 +75,7 @@ Run from repo root.
 
 ### Release Dry Run
 
-- `npx --yes --package @semantic-release/commit-analyzer --package @semantic-release/release-notes-generator --package @semantic-release/changelog --package @semantic-release/github --package @semantic-release/git semantic-release --dry-run`
+- `npx --yes --package @semantic-release/commit-analyzer --package @semantic-release/release-notes-generator --package conventional-changelog-conventionalcommits --package @semantic-release/changelog --package semantic-release-replace-plugin --package @semantic-release/github --package @semantic-release/git semantic-release --dry-run`
 
 ## Code Style Guidelines
 

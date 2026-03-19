@@ -37,10 +37,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx --yes \
-            --package @semantic-release/commit-analyzer \
-            --package @semantic-release/release-notes-generator \
             --package @semantic-release/changelog \
-            --package semantic-release-replace-plugin \
-            --package @semantic-release/github \
             --package @semantic-release/git \
+            --package conventional-changelog-conventionalcommits \
+            --package semantic-release-replace-plugin \
             semantic-release
