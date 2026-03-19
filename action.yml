@@ -114,5 +114,5 @@ runs:
         }
         & panache @args
 branding:
-  icon: check-circle
-  color: blue
+  icon: code
+  color: gray-dark
