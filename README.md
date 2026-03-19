@@ -1,5 +1,7 @@
 # GitHub Action for Panache <img src='https://raw.githubusercontent.com/jolars/panache/refs/heads/main/images/logo.png' align="right" width="139" />
 
+[![CI](https://github.com/jolars/panache-action/actions/workflows/ci.yml/badge.svg)](https://github.com/jolars/panache-action/actions/workflows/ci.yml)
+
 A GitHub Action that installs [panache](https://github.com/jolars/panache) and
 runs formatting and lint checks in CI.
 
