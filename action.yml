@@ -1,0 +1,118 @@
+name: "panache-action"
+description: "Install Panache and run format/lint checks"
+author: "jolars"
+inputs:
+  path:
+    description: "File or directory to check"
+    required: false
+    default: "."
+  panache-version:
+    description: "Panache version to install (latest or vX.Y.Z)"
+    required: false
+    default: "latest"
+  format:
+    description: "Run panache format --check"
+    required: false
+    default: "true"
+  lint:
+    description: "Run panache lint --check"
+    required: false
+    default: "true"
+  config:
+    description: "Optional path to panache config file"
+    required: false
+    default: ""
+outputs:
+  panache-version:
+    description: "The installed panache version"
+    value: ${{ steps.panache-version-unix.outputs.panache-version || steps.panache-version-windows.outputs.panache-version }}
+runs:
+  using: "composite"
+  steps:
+    - name: Install panache (Unix)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: bash "${{ github.action_path }}/scripts/install-panache.sh"
+      env:
+        PANACHE_REPO: jolars/panache
+        PANACHE_VERSION: ${{ inputs.panache-version }}
+        PANACHE_INSTALL_DIR: ${{ runner.temp }}/panache-bin
+
+    - name: Install panache (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: . "${{ github.action_path }}/scripts/install-panache.ps1"
+      env:
+        PANACHE_REPO: jolars/panache
+        PANACHE_VERSION: ${{ inputs.panache-version }}
+        PANACHE_INSTALL_DIR: ${{ runner.temp }}\panache-bin
+
+    - name: Add panache to PATH (Unix)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: echo "${{ runner.temp }}/panache-bin" >> "$GITHUB_PATH"
+
+    - name: Add panache to PATH (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: Add-Content -Path $env:GITHUB_PATH -Value "${{ runner.temp }}\panache-bin"
+
+    - name: Capture panache version (Unix)
+      if: runner.os != 'Windows'
+      id: panache-version-unix
+      shell: bash
+      run: |
+        VERSION="$(panache --version | awk '{print $2}')"
+        echo "panache-version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+    - name: Capture panache version (Windows)
+      if: runner.os == 'Windows'
+      id: panache-version-windows
+      shell: pwsh
+      run: |
+        $versionLine = panache --version
+        $version = ($versionLine -split ' ')[1]
+        "panache-version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+    - name: Run format check (Unix)
+      if: runner.os != 'Windows' && inputs.format == 'true'
+      shell: bash
+      run: |
+        CONFIG_ARGS=()
+        if [ -n "${{ inputs.config }}" ]; then
+          CONFIG_ARGS=(--config "${{ inputs.config }}")
+        fi
+        panache format --check "${{ inputs.path }}" "${CONFIG_ARGS[@]}"
+
+    - name: Run format check (Windows)
+      if: runner.os == 'Windows' && inputs.format == 'true'
+      shell: pwsh
+      run: |
+        $args = @("format", "--check", "${{ inputs.path }}")
+        if ("${{ inputs.config }}" -ne "") {
+          $args += @("--config", "${{ inputs.config }}")
+        }
+        & panache @args
+
+    - name: Run lint check (Unix)
+      if: runner.os != 'Windows' && inputs.lint == 'true'
+      shell: bash
+      run: |
+        CONFIG_ARGS=()
+        if [ -n "${{ inputs.config }}" ]; then
+          CONFIG_ARGS=(--config "${{ inputs.config }}")
+        fi
+        panache lint --check "${{ inputs.path }}" "${CONFIG_ARGS[@]}"
+
+    - name: Run lint check (Windows)
+      if: runner.os == 'Windows' && inputs.lint == 'true'
+      shell: pwsh
+      run: |
+        $args = @("lint", "--check", "${{ inputs.path }}")
+        if ("${{ inputs.config }}" -ne "") {
+          $args += @("--config", "${{ inputs.config }}")
+        }
+        & panache @args
+branding:
+  icon: check-circle
+  color: blue
