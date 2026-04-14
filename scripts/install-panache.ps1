@@ -14,9 +14,42 @@ switch ($arch) {
 }
 
 $asset = "panache-$target.zip"
+$apiUrl = "https://api.github.com/repos/$repo/releases?per_page=100"
+
+function Resolve-LatestTagWithAsset {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AssetName
+    )
+
+    $headers = @{
+        Accept = 'application/vnd.github+json'
+        'X-GitHub-Api-Version' = '2022-11-28'
+    }
+
+    if ($env:GITHUB_TOKEN) {
+        $headers['Authorization'] = "Bearer $($env:GITHUB_TOKEN)"
+    }
+
+    $releases = Invoke-RestMethod -Uri $apiUrl -Headers $headers
+    foreach ($release in $releases) {
+        if ($release.draft -or $release.prerelease) {
+            continue
+        }
+
+        foreach ($releaseAsset in $release.assets) {
+            if ($releaseAsset.name -eq $AssetName) {
+                return $release.tag_name
+            }
+        }
+    }
+
+    throw "Could not find a non-draft release in $repo containing asset $AssetName"
+}
 
 if ($version -eq 'latest') {
-    $url = "https://github.com/$repo/releases/latest/download/$asset"
+    $tag = Resolve-LatestTagWithAsset -AssetName $asset
+    $url = "https://github.com/$repo/releases/download/$tag/$asset"
 } else {
     $tag = if ($version.StartsWith('v')) { $version } else { "v$version" }
     $url = "https://github.com/$repo/releases/download/$tag/$asset"
