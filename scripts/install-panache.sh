@@ -39,8 +39,15 @@ esac
 asset="panache-${target}.tar.gz"
 
 resolve_latest_tag_with_asset() {
+	api_response="$(mktemp)"
+
+	cleanup_api_response() {
+		rm -f "$api_response"
+	}
+
 	if ! command -v python3 >/dev/null 2>&1; then
 		echo "python3 is required to resolve the latest Panache release tag" >&2
+		cleanup_api_response
 		exit 1
 	fi
 
@@ -49,13 +56,23 @@ resolve_latest_tag_with_asset() {
 			-H "Accept: application/vnd.github+json" \
 			-H "X-GitHub-Api-Version: 2022-11-28" \
 			-H "Authorization: Bearer ${GITHUB_TOKEN}" \
-			"$API_URL"
+			"$API_URL" \
+			-o "$api_response"
 	else
 		curl --proto '=https' --tlsv1.2 -fLsS \
 			-H "Accept: application/vnd.github+json" \
 			-H "X-GitHub-Api-Version: 2022-11-28" \
-			"$API_URL"
-	fi |
+			"$API_URL" \
+			-o "$api_response"
+	fi
+
+	if [ ! -s "$api_response" ]; then
+		echo "Failed to query GitHub Releases API for ${REPO}. If rate-limited, provide GITHUB_TOKEN." >&2
+		cleanup_api_response
+		return 1
+	fi
+
+	tag="$(
 		python3 -c '
 import json
 import sys
@@ -72,7 +89,14 @@ for release in releases:
             raise SystemExit(0)
 
 raise SystemExit(1)
-' "$asset"
+' "$asset" <"$api_response"
+	)" || {
+		cleanup_api_response
+		return 1
+	}
+
+	cleanup_api_response
+	printf '%s\n' "$tag"
 }
 
 if [ "$VERSION" = "latest" ]; then
