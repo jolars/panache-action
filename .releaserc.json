@@ -47,11 +47,6 @@
         ]
       }
     ],
-    [
-      "@semantic-release/github",
-      {
-        "draftRelease": true
-      }
-    ]
+    "@semantic-release/github"
   ]
 }
