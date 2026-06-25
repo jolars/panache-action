@@ -24,7 +24,7 @@ jobs:
           - windows-latest
           - windows-11-arm
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Run action (should pass)
         uses: ./
         with:
@@ -44,7 +44,7 @@ jobs:
           - windows-latest
           - windows-11-arm
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Run action (should fail)
         id: expected-failure
         continue-on-error: true
@@ -86,7 +86,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
