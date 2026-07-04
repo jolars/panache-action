@@ -10,6 +10,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Shell syntax check
+        run: sh -n scripts/install-panache.sh
+      - name: ShellCheck
+        run: shellcheck scripts/install-panache.sh
+      - name: PowerShell parse check
+        shell: pwsh
+        run: |
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path scripts/install-panache.ps1), [ref]$null, [ref]$errors)
+          if ($errors) { $errors; exit 1 }
+      - name: actionlint
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          "$(go env GOPATH)/bin/actionlint"
+
   test-pass:
     name: Pass (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -63,6 +84,7 @@ jobs:
     name: All tests passed
     runs-on: ubuntu-latest
     needs:
+      - lint
       - test-pass
       - test-fail
     if: always()

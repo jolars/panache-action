@@ -19,10 +19,9 @@ Guidance for agentic coding assistants in `panache-action`.
 ## Repository Map
 
 - `action.yml`: action API (inputs/outputs) and execution steps.
-- `scripts/install-panache.sh`: Unix installer.
-- `scripts/install-panache.ps1`: Windows installer.
-- `.github/workflows/test.yml`: integration tests.
-- `.github/workflows/release.yml`: test + semantic-release.
+- `scripts/install-panache.sh`: Unix installer (verifies checksum + provenance).
+- `scripts/install-panache.ps1`: Windows installer (verifies checksum + provenance).
+- `.github/workflows/ci.yml`: lint, integration tests, and semantic-release.
 - `.github/workflows/update-major-minor-tags.yml`: release tag maintenance.
 - `fixtures/ok.md`, `fixtures/bad.md`: expected pass/fail fixtures.
 - `.releaserc.json`: semantic-release + conventional commit settings.
@@ -41,30 +40,34 @@ Run from repo root.
 ### Build
 
 - No compile step exists.
-- Use `.github/workflows/test.yml` as the main quality gate.
+- Use `.github/workflows/ci.yml` as the main quality gate.
 
 ### Lint and Validation
 
+The `lint` job in `ci.yml` runs all of these; run them locally before pushing.
+
 - Shell syntax:
   - `sh -n scripts/install-panache.sh`
+- ShellCheck:
+  - `shellcheck scripts/install-panache.sh`
 - PowerShell parse check:
   - `pwsh -NoLogo -NoProfile -Command "[void][ScriptBlock]::Create((Get-Content -Raw 'scripts/install-panache.ps1'))"`
-- Optional stronger checks (if installed):
-  - `shellcheck scripts/install-panache.sh`
+- Workflow lint:
   - `actionlint`
 
 ### Test
 
-- Main workflow: `.github/workflows/test.yml`.
+- Main workflow: `.github/workflows/ci.yml`.
 - Jobs:
+  - `lint` runs shell/PowerShell/workflow linters.
   - `test-pass` should succeed with `fixtures/ok.md`.
   - `test-fail` should fail with `fixtures/bad.md` (failure is asserted).
 
 ### Run a Single Test
 
 - Preferred local approach with `act`:
-  - `act pull_request -W .github/workflows/test.yml -j test-pass`
-  - `act pull_request -W .github/workflows/test.yml -j test-fail`
+  - `act push -W .github/workflows/ci.yml -j test-pass`
+  - `act push -W .github/workflows/ci.yml -j test-fail`
 
 - Focused Unix smoke checks without `act`:
   - Pass path:
@@ -153,6 +156,10 @@ Follow existing patterns and keep diffs focused.
 ## Security and Safety
 
 - Download artifacts only over HTTPS from GitHub Releases.
+- Verify downloads against the release `SHA256SUMS` manifest; a mismatch
+  aborts, a missing manifest (older releases) warns and continues.
+- Verify build provenance with `gh attestation verify` when `gh` is available;
+  a failing attestation aborts, a missing one or missing `gh` warns.
 - Never log secrets/tokens.
 - Treat release/tag automation edits as high risk.
 
