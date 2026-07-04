@@ -148,11 +148,13 @@ fi
 # Verify build provenance when the gh CLI is available. This is stronger than
 # the checksum: it ties the archive to the workflow that built it, via a
 # Sigstore signature. A present-but-failing attestation aborts; a missing
-# attestation (older releases) or missing gh warns and continues.
+# attestation (older releases) or missing gh warns and continues. When no
+# attestation exists, gh reports it either as "no attestations found" or as an
+# HTTP 404 on the attestations API endpoint, so tolerate both.
 if command -v gh >/dev/null 2>&1; then
 	if attest_out="$(gh attestation verify "$tmpdir/$asset" --repo "$REPO" 2>&1)"; then
 		echo "Verified $asset provenance (attestation)"
-	elif printf '%s' "$attest_out" | grep -qi 'no attestation'; then
+	elif printf '%s' "$attest_out" | grep -qiE 'no attestation|http 404'; then
 		echo "Warning: no provenance attestation for this release; skipping" >&2
 	else
 		echo "Provenance verification failed for $asset" >&2

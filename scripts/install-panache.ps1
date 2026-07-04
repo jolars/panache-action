@@ -96,12 +96,14 @@ try {
     # Verify build provenance when the gh CLI is available. Stronger than the
     # checksum: it ties the archive to the workflow that built it. A present-
     # but-failing attestation aborts; a missing attestation (older releases) or
-    # missing gh warns and continues.
+    # missing gh warns and continues. When no attestation exists, gh reports it
+    # either as "no attestations found" or as an HTTP 404 on the attestations
+    # API endpoint, so tolerate both.
     if (Get-Command gh -ErrorAction SilentlyContinue) {
         $attestOut = & gh attestation verify $zipPath --repo $repo 2>&1 | Out-String
         if ($LASTEXITCODE -eq 0) {
             Write-Host "Verified $asset provenance (attestation)"
-        } elseif ($attestOut -match '(?i)no attestation') {
+        } elseif ($attestOut -match '(?i)no attestation|http 404') {
             Write-Warning "No provenance attestation for this release; skipping"
         } else {
             Write-Host $attestOut
