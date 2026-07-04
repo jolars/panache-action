@@ -105,6 +105,9 @@ try {
             Write-Host "Verified $asset provenance (attestation)"
         } elseif ($attestOut -match '(?i)no attestation|http 404') {
             Write-Warning "No provenance attestation for this release; skipping"
+            # gh left a non-zero $LASTEXITCODE; clear it so the step, whose exit
+            # code GitHub derives from $LASTEXITCODE, does not inherit it.
+            $global:LASTEXITCODE = 0
         } else {
             Write-Host $attestOut
             throw "Provenance verification failed for $asset"
