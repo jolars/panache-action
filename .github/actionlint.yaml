@@ -1,0 +1,6 @@
+# actionlint's built-in runner-label list lags behind GitHub's hosted runners.
+# Declare the newer labels we use so they aren't flagged as unknown.
+self-hosted-runner:
+  labels:
+    - macos-15-intel
+    - windows-11-arm
