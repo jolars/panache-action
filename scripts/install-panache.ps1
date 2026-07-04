@@ -49,11 +49,13 @@ function Resolve-LatestTagWithAsset {
 
 if ($version -eq 'latest') {
     $tag = Resolve-LatestTagWithAsset -AssetName $asset
-    $url = "https://github.com/$repo/releases/download/$tag/$asset"
+    $base = "https://github.com/$repo/releases/download/$tag"
 } else {
     $tag = if ($version.StartsWith('v')) { $version } else { "v$version" }
-    $url = "https://github.com/$repo/releases/download/$tag/$asset"
+    $base = "https://github.com/$repo/releases/download/$tag"
 }
+$url = "$base/$asset"
+$sumsUrl = "$base/SHA256SUMS"
 
 $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("panache-install-" + [System.Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $tmpDir | Out-Null
@@ -62,6 +64,34 @@ try {
     $zipPath = Join-Path $tmpDir $asset
     Write-Host "Downloading $asset ($version)..."
     Invoke-WebRequest -Uri $url -OutFile $zipPath
+
+    # Verify against the release's SHA256SUMS manifest. Releases that predate
+    # the manifest 404 here, in which case we warn and continue.
+    $expected = $null
+    $sumsPath = Join-Path $tmpDir 'SHA256SUMS'
+    try {
+        Invoke-WebRequest -Uri $sumsUrl -OutFile $sumsPath -ErrorAction Stop
+    } catch {
+        Write-Warning "No SHA256SUMS published for this release; skipping checksum verification"
+    }
+    if (Test-Path $sumsPath) {
+        foreach ($line in Get-Content $sumsPath) {
+            $parts = $line -split '\s+', 2
+            if ($parts.Count -eq 2) {
+                $name = $parts[1].TrimStart('*').Trim()
+                if ($name -eq $asset) { $expected = $parts[0].Trim(); break }
+            }
+        }
+        if ($expected) {
+            $actual = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash.ToLower()
+            if ($actual -ne $expected.ToLower()) {
+                throw "Checksum verification failed for $asset (expected $expected, got $actual)"
+            }
+            Write-Host "Verified $asset (sha256)"
+        } else {
+            Write-Warning "$asset not listed in SHA256SUMS; skipping checksum verification"
+        }
+    }
 
     Expand-Archive -Path $zipPath -DestinationPath $tmpDir -Force
     New-Item -ItemType Directory -Path $installDir -Force | Out-Null

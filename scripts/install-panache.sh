@@ -104,20 +104,46 @@ if [ "$VERSION" = "latest" ]; then
 		echo "Could not find a non-draft release in ${REPO} containing asset ${asset}" >&2
 		exit 1
 	}
-	url="https://github.com/${REPO}/releases/download/${tag}/${asset}"
+	base="https://github.com/${REPO}/releases/download/${tag}"
 else
 	case "$VERSION" in
 	v*) tag="$VERSION" ;;
 	*) tag="v${VERSION}" ;;
 	esac
-	url="https://github.com/${REPO}/releases/download/${tag}/${asset}"
+	base="https://github.com/${REPO}/releases/download/${tag}"
 fi
+url="${base}/${asset}"
+sums_url="${base}/SHA256SUMS"
 
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT INT TERM
 
 echo "Downloading ${asset} (${VERSION})..."
 curl --proto '=https' --tlsv1.2 -fLsS "$url" -o "$tmpdir/$asset"
+
+# Verify the archive against the release's SHA256SUMS manifest. Releases that
+# predate the manifest return 404, in which case we warn and continue.
+if curl --proto '=https' --tlsv1.2 -fLsS "$sums_url" -o "$tmpdir/SHA256SUMS" 2>/dev/null; then
+	expected="$(awk -v a="$asset" '{n=$2; sub(/^\*/, "", n); if (n == a) print $1}' "$tmpdir/SHA256SUMS")"
+	if [ -z "$expected" ]; then
+		echo "Warning: $asset not listed in SHA256SUMS; skipping checksum verification" >&2
+	else
+		if command -v sha256sum >/dev/null 2>&1; then
+			actual="$(sha256sum "$tmpdir/$asset" | awk '{print $1}')"
+		else
+			actual="$(shasum -a 256 "$tmpdir/$asset" | awk '{print $1}')"
+		fi
+		if [ "$actual" != "$expected" ]; then
+			echo "Checksum verification failed for $asset" >&2
+			echo "  expected: $expected" >&2
+			echo "  actual:   $actual" >&2
+			exit 1
+		fi
+		echo "Verified $asset (sha256)"
+	fi
+else
+	echo "Warning: no SHA256SUMS published for this release; skipping checksum verification" >&2
+fi
 
 tar -xzf "$tmpdir/$asset" -C "$tmpdir"
 mkdir -p "$INSTALL_DIR"

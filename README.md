@@ -84,6 +84,27 @@ jobs:
 | --------- | ----------------------------- |
 | `version` | Installed panache CLI version |
 
+## Verifying downloads
+
+Every panache release publishes a `SHA256SUMS` manifest covering its release
+assets. This action verifies the downloaded archive against that manifest before
+installing; if a checksum mismatches, the install fails. Releases that predate
+the manifest are installed with a warning.
+
+To verify a download by hand:
+
+```bash
+# Download the archive and the manifest for your platform/version
+curl -fLO https://github.com/jolars/panache/releases/download/v2.23.0/panache-x86_64-unknown-linux-gnu.tar.gz
+curl -fLO https://github.com/jolars/panache/releases/download/v2.23.0/SHA256SUMS
+
+# Check just this archive against the manifest
+sha256sum --ignore-missing -c SHA256SUMS
+```
+
+Checksums guard against corrupted or truncated downloads; they are not a
+substitute for release signing.
+
 ## Versioning
 
 This action uses semantic versioning based on action API changes:
