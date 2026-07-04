@@ -105,6 +105,26 @@ sha256sum --ignore-missing -c SHA256SUMS
 Checksums guard against corrupted or truncated downloads; they are not a
 substitute for release signing.
 
+### Build provenance
+
+Release archives also carry a [build provenance
+attestation](https://docs.github.com/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds),
+signed via Sigstore and tied to the workflow that built them. Unlike the
+checksum manifest, this cannot be forged by an attacker who only controls the
+release assets. When the `gh` CLI is available, this action verifies it before
+installing; a failing attestation aborts the install, while a missing one
+(older releases) or a missing `gh` warns and continues.
+
+To verify by hand:
+
+```bash
+gh attestation verify panache-x86_64-unknown-linux-gnu.tar.gz \
+  --repo jolars/panache
+```
+
+Add `--signer-workflow jolars/panache/.github/workflows/packages.yml` to also
+pin the exact workflow that must have produced the artifact.
+
 ## Versioning
 
 This action uses semantic versioning based on action API changes:

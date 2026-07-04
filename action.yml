@@ -37,7 +37,10 @@ runs:
         PANACHE_REPO: jolars/panache
         PANACHE_VERSION: ${{ inputs.version }}
         PANACHE_INSTALL_DIR: ${{ runner.temp }}/panache-bin
+        # GITHUB_TOKEN authenticates the Releases API query; GH_TOKEN lets the
+        # install script run `gh attestation verify`.
         GITHUB_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ github.token }}
 
     - name: Install panache (Windows)
       if: runner.os == 'Windows'
@@ -48,6 +51,7 @@ runs:
         PANACHE_VERSION: ${{ inputs.version }}
         PANACHE_INSTALL_DIR: ${{ runner.temp }}\panache-bin
         GITHUB_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ github.token }}
 
     - name: Add panache to PATH (Unix)
       if: runner.os != 'Windows'

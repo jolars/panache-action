@@ -145,6 +145,24 @@ else
 	echo "Warning: no SHA256SUMS published for this release; skipping checksum verification" >&2
 fi
 
+# Verify build provenance when the gh CLI is available. This is stronger than
+# the checksum: it ties the archive to the workflow that built it, via a
+# Sigstore signature. A present-but-failing attestation aborts; a missing
+# attestation (older releases) or missing gh warns and continues.
+if command -v gh >/dev/null 2>&1; then
+	if attest_out="$(gh attestation verify "$tmpdir/$asset" --repo "$REPO" 2>&1)"; then
+		echo "Verified $asset provenance (attestation)"
+	elif printf '%s' "$attest_out" | grep -qi 'no attestation'; then
+		echo "Warning: no provenance attestation for this release; skipping" >&2
+	else
+		echo "Provenance verification failed for $asset" >&2
+		echo "$attest_out" >&2
+		exit 1
+	fi
+else
+	echo "Warning: gh CLI not found; skipping provenance verification" >&2
+fi
+
 tar -xzf "$tmpdir/$asset" -C "$tmpdir"
 mkdir -p "$INSTALL_DIR"
 install -m 755 "$tmpdir/panache" "$INSTALL_DIR/panache"
