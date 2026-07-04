@@ -21,10 +21,11 @@ Guidance for agentic coding assistants in `panache-action`.
 - `action.yml`: action API (inputs/outputs) and execution steps.
 - `scripts/install-panache.sh`: Unix installer (verifies checksum + provenance).
 - `scripts/install-panache.ps1`: Windows installer (verifies checksum + provenance).
-- `.github/workflows/ci.yml`: lint, integration tests, and semantic-release.
+- `.github/workflows/ci.yml`: lint, integration tests, and the versionary release job.
 - `.github/workflows/update-major-minor-tags.yml`: release tag maintenance.
 - `fixtures/ok.md`, `fixtures/bad.md`: expected pass/fail fixtures.
-- `.releaserc.json`: semantic-release + conventional commit settings.
+- `versionary.jsonc`: versionary release configuration.
+- `version.txt`: current version; versionary's source of truth for the release.
 
 ## Tooling Assumptions
 
@@ -78,7 +79,7 @@ The `lint` job in `ci.yml` runs all of these; run them locally before pushing.
 
 ### Release Dry Run
 
-- `npx --yes --package @semantic-release/commit-analyzer --package @semantic-release/release-notes-generator --package conventional-changelog-conventionalcommits --package @semantic-release/changelog --package semantic-release-replace-plugin --package @semantic-release/github --package @semantic-release/git semantic-release --dry-run`
+- `npx --yes versionary run --dry-run`
 
 ## Code Style Guidelines
 
@@ -118,11 +119,11 @@ Follow existing patterns and keep diffs focused.
 - Use `try/finally` for cleanup.
 - Throw explicit errors for unsupported architecture.
 
-### JSON (`.releaserc.json`)
+### JSON (`versionary.jsonc`)
 
 - Use 2-space indentation.
 - Keep double-quoted keys.
-- Keep plugin order/behavior stable unless intentionally changing release logic.
+- Keep `version.txt` in sync with the latest released version.
 
 ### Markdown (`README.md`)
 
@@ -173,7 +174,7 @@ Follow existing patterns and keep diffs focused.
 
 ## Release Notes Convention
 
-- semantic-release reads commit intent from conventional commits.
+- versionary reads commit intent from conventional commits.
 - Use `feat:` for user-facing additions.
 - Use `fix:` for behavior corrections.
 - Use `chore:` for maintenance/internal updates.
