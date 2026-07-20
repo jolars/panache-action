@@ -75,7 +75,7 @@ jobs:
 | `path`    | File or directory to check                        | `.`      |
 | `version` | Panache version to install (`latest` or `vX.Y.Z`) | `latest` |
 | `format`  | Run `panache format --check`                      | `true`   |
-| `lint`    | Run `panache lint --check`                        | `true`   |
+| `lint`    | Run `panache lint`                                | `true`   |
 | `config`  | Optional path to panache config file              | `""`     |
 
 ## Outputs

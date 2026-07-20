@@ -15,7 +15,7 @@ inputs:
     required: false
     default: "true"
   lint:
-    description: "Run panache lint --check"
+    description: "Run panache lint"
     required: false
     default: "true"
   config:
@@ -108,13 +108,13 @@ runs:
         if [ -n "${{ inputs.config }}" ]; then
           CONFIG_ARGS=(--config "${{ inputs.config }}")
         fi
-        panache lint --check "${{ inputs.path }}" "${CONFIG_ARGS[@]}"
+        panache lint "${{ inputs.path }}" "${CONFIG_ARGS[@]}"
 
     - name: Run lint check (Windows)
       if: runner.os == 'Windows' && inputs.lint == 'true'
       shell: pwsh
       run: |
-        $args = @("lint", "--check", "${{ inputs.path }}")
+        $args = @("lint", "${{ inputs.path }}")
         if ("${{ inputs.config }}" -ne "") {
           $args += @("--config", "${{ inputs.config }}")
         }

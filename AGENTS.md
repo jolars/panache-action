@@ -72,7 +72,7 @@ The `lint` job in `ci.yml` runs all of these; run them locally before pushing.
 
 - Focused Unix smoke checks without `act`:
   - Pass path:
-    - `tmpdir="$(mktemp -d)" && PANACHE_INSTALL_DIR="$tmpdir" bash scripts/install-panache.sh && "$tmpdir/panache" format --check fixtures/ok.md && "$tmpdir/panache" lint --check fixtures/ok.md`
+    - `tmpdir="$(mktemp -d)" && PANACHE_INSTALL_DIR="$tmpdir" bash scripts/install-panache.sh && "$tmpdir/panache" format --check fixtures/ok.md && "$tmpdir/panache" lint fixtures/ok.md`
   - Expected fail path:
     - `tmpdir="$(mktemp -d)" && PANACHE_INSTALL_DIR="$tmpdir" bash scripts/install-panache.sh && "$tmpdir/panache" format --check fixtures/bad.md`
     - Expect non-zero exit code.
