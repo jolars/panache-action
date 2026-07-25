@@ -22,6 +22,10 @@ inputs:
     description: "Optional path to panache config file"
     required: false
     default: ""
+  verify-checksum:
+    description: "Verify the downloaded asset against the release's SHA256SUMS manifest (skips with a warning if the release has no manifest)"
+    required: false
+    default: "true"
 outputs:
   version:
     description: "The installed panache version"
@@ -29,28 +33,75 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Resolve panache version
+      id: resolve
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -eu
+        REQUESTED="${{ inputs.version }}"
+        if [ "$REQUESTED" = "latest" ]; then
+          # Resolve to the newest non-draft release that contains this
+          # platform's asset, not simply the newest release, whose binaries
+          # may still be uploading (or have failed to build).
+          case "${RUNNER_OS}-${RUNNER_ARCH}" in
+          Linux-X64) ASSET="panache-x86_64-unknown-linux-gnu.tar.gz" ;;
+          Linux-ARM64) ASSET="panache-aarch64-unknown-linux-gnu.tar.gz" ;;
+          macOS-X64) ASSET="panache-x86_64-apple-darwin.tar.gz" ;;
+          macOS-ARM64) ASSET="panache-aarch64-apple-darwin.tar.gz" ;;
+          Windows-X64) ASSET="panache-x86_64-pc-windows-msvc.zip" ;;
+          Windows-ARM64) ASSET="panache-aarch64-pc-windows-msvc.zip" ;;
+          *)
+            echo "Unsupported platform: ${RUNNER_OS}-${RUNNER_ARCH}" >&2
+            exit 1
+            ;;
+          esac
+          export ASSET
+          RESOLVED="$(gh api "repos/jolars/panache/releases?per_page=100" \
+            --jq '[.[] | select((.draft or .prerelease) | not) | select(any(.assets[]; .name == env.ASSET))][0].tag_name')"
+          if [ -z "$RESOLVED" ] || [ "$RESOLVED" = "null" ]; then
+            echo "Could not find a non-draft release containing ${ASSET}" >&2
+            exit 1
+          fi
+          echo "Resolved latest to ${RESOLVED}"
+        else
+          case "$REQUESTED" in
+          v*) RESOLVED="$REQUESTED" ;;
+          *) RESOLVED="v${REQUESTED}" ;;
+          esac
+        fi
+        echo "resolved-version=${RESOLVED}" >> "$GITHUB_OUTPUT"
+
+    - name: Cache panache binary
+      id: cache
+      uses: actions/cache@v6
+      with:
+        path: ${{ runner.temp }}/panache-bin
+        key: panache-${{ steps.resolve.outputs.resolved-version }}-${{ runner.os }}-${{ runner.arch }}
+
     - name: Install panache (Unix)
-      if: runner.os != 'Windows'
+      if: runner.os != 'Windows' && steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: bash "${{ github.action_path }}/scripts/install-panache.sh"
       env:
         PANACHE_REPO: jolars/panache
-        PANACHE_VERSION: ${{ inputs.version }}
+        PANACHE_VERSION: ${{ steps.resolve.outputs.resolved-version }}
         PANACHE_INSTALL_DIR: ${{ runner.temp }}/panache-bin
-        # GITHUB_TOKEN authenticates the Releases API query; GH_TOKEN lets the
-        # install script run `gh attestation verify`.
-        GITHUB_TOKEN: ${{ github.token }}
+        PANACHE_VERIFY_CHECKSUM: ${{ inputs.verify-checksum }}
+        # Lets the install script run `gh attestation verify`.
         GH_TOKEN: ${{ github.token }}
 
     - name: Install panache (Windows)
-      if: runner.os == 'Windows'
+      if: runner.os == 'Windows' && steps.cache.outputs.cache-hit != 'true'
       shell: pwsh
       run: . "${{ github.action_path }}/scripts/install-panache.ps1"
       env:
         PANACHE_REPO: jolars/panache
-        PANACHE_VERSION: ${{ inputs.version }}
+        PANACHE_VERSION: ${{ steps.resolve.outputs.resolved-version }}
         PANACHE_INSTALL_DIR: ${{ runner.temp }}\panache-bin
-        GITHUB_TOKEN: ${{ github.token }}
+        PANACHE_VERIFY_CHECKSUM: ${{ inputs.verify-checksum }}
+        # Lets the install script run `gh attestation verify`.
         GH_TOKEN: ${{ github.token }}
 
     - name: Add panache to PATH (Unix)

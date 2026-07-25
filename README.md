@@ -6,7 +6,9 @@ A GitHub Action that installs [Panache](https://github.com/jolars/panache) and
 runs formatting and lint checks in CI.
 
 The action installs prebuilt release artifacts and supports GitHub-hosted
-runners for Linux, macOS, and Windows on both x64 and ARM64.
+runners for Linux, macOS, and Windows on both x64 and ARM64. Downloaded
+binaries are verified against the release's SHA256 checksum manifest and build
+provenance attestation, and cached between runs.
 
 ## Usage
 
@@ -70,13 +72,14 @@ jobs:
 
 ## Inputs
 
-| Input     | Description                                       | Default  |
-| --------- | ------------------------------------------------- | -------- |
-| `path`    | File or directory to check                        | `.`      |
-| `version` | Panache version to install (`latest` or `vX.Y.Z`) | `latest` |
-| `format`  | Run `panache format --check`                      | `true`   |
-| `lint`    | Run `panache lint`                                | `true`   |
-| `config`  | Optional path to panache config file              | `""`     |
+| Input             | Description                                          | Default  |
+| ----------------- | ---------------------------------------------------- | -------- |
+| `path`            | File or directory to check                           | `.`      |
+| `version`         | Panache version to install (`latest` or `vX.Y.Z`)    | `latest` |
+| `format`          | Run `panache format --check`                         | `true`   |
+| `lint`            | Run `panache lint`                                   | `true`   |
+| `config`          | Optional path to panache config file                 | `""`     |
+| `verify-checksum` | Verify the downloaded archive against its SHA256     | `true`   |
 
 ## Outputs
 
@@ -87,9 +90,10 @@ jobs:
 ## Verifying downloads
 
 Every panache release publishes a `SHA256SUMS` manifest covering its release
-assets. This action verifies the downloaded archive against that manifest before
-installing; if a checksum mismatches, the install fails. Releases that predate
-the manifest are installed with a warning.
+assets. When `verify-checksum` is `true` (the default), this action verifies
+the downloaded archive against that manifest before installing; if a checksum
+mismatches, the install fails. Releases that predate the manifest are installed
+with a warning.
 
 To verify a download by hand:
 
