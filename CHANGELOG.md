@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.0](https://github.com/jolars/panache-action/compare/v1.0.1...v1.1.0) (2026-08-06)
+
+### Features
+- add `quiet` input to trim the format-check diff ([`055e381`](https://github.com/jolars/panache-action/commit/055e381c7907e00a29437a3aeb4a7205aeaf8c49))
+- cache binary and add `verify-checksum` input ([`77052d0`](https://github.com/jolars/panache-action/commit/77052d03df71908167638d48eac8684114e1c185))
+
+### Bug Fixes
+- drop deprecated `--check` flag from lint ([`07c2e15`](https://github.com/jolars/panache-action/commit/07c2e157cbd50c0a12f748d82fbbbab7093134e8))
+
 ## [1.1.0](https://github.com/jolars/panache-action/compare/v1.0.1...v1.1.0) (2026-07-04)
 
 ## [1.0.1](https://github.com/jolars/panache-action/compare/v1.0.0...v1.0.1) (2026-04-14)
