@@ -14,6 +14,10 @@ inputs:
     description: "Run panache format --check"
     required: false
     default: "true"
+  quiet:
+    description: "Suppress the format --check diff, printing only the files that would be reformatted"
+    required: false
+    default: "false"
   lint:
     description: "Run panache lint"
     required: false
@@ -139,7 +143,11 @@ runs:
         if [ -n "${{ inputs.config }}" ]; then
           CONFIG_ARGS=(--config "${{ inputs.config }}")
         fi
-        panache format --check "${{ inputs.path }}" "${CONFIG_ARGS[@]}"
+        QUIET_ARGS=()
+        if [ "${{ inputs.quiet }}" = "true" ]; then
+          QUIET_ARGS=(--quiet)
+        fi
+        panache format --check "${{ inputs.path }}" "${CONFIG_ARGS[@]}" "${QUIET_ARGS[@]}"
 
     - name: Run format check (Windows)
       if: runner.os == 'Windows' && inputs.format == 'true'
@@ -148,6 +156,9 @@ runs:
         $args = @("format", "--check", "${{ inputs.path }}")
         if ("${{ inputs.config }}" -ne "") {
           $args += @("--config", "${{ inputs.config }}")
+        }
+        if ("${{ inputs.quiet }}" -eq "true") {
+          $args += "--quiet"
         }
         & panache @args
 

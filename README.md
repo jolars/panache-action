@@ -77,6 +77,7 @@ jobs:
 | `path`            | File or directory to check                           | `.`      |
 | `version`         | Panache version to install (`latest` or `vX.Y.Z`)    | `latest` |
 | `format`          | Run `panache format --check`                         | `true`   |
+| `quiet`           | Suppress the `format --check` diff (list only)       | `false`  |
 | `lint`            | Run `panache lint`                                   | `true`   |
 | `config`          | Optional path to panache config file                 | `""`     |
 | `verify-checksum` | Verify the downloaded archive against its SHA256     | `true`   |
